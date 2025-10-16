@@ -1,0 +1,29 @@
+{
+  "name": "a-dbacks",
+  "version": "1.0.0",
+  "description": "Scouting Aid Tool",
+  "keywords": [
+    "Baseball",
+    "Scouting",
+    "Aid",
+    "Tool"
+  ],
+  "homepage": "https://github.com/Fpantoja2001/dbacks#readme",
+  "bugs": {
+    "url": "https://github.com/Fpantoja2001/dbacks/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Fpantoja2001/dbacks.git"
+  },
+  "license": "MIT",
+  "author": "Felix Manuel Pantoja",
+  "type": "commonjs",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
