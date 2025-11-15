@@ -15,9 +15,9 @@ class PlayerCreate(BaseModel):
     birth_city: str
 
     # Miscellaneous
-    agent: Optional[str]
-    related_ids: Optional[Dict[str,str]]
-    notes: Optional[str]
+    agent: Optional[str] = None
+    related_ids: Optional[Dict[str,str]] = None
+    notes: Optional[str] = None
 
 class PlayerFastCreate(BaseModel):
     first_name: str
@@ -47,7 +47,7 @@ class PlayerResponse(BaseModel):
     notes: Optional[str]
 
     # Relationship
-    scout: str
+    # scout: str
     scout_id: str
 
     # Time
@@ -56,3 +56,19 @@ class PlayerResponse(BaseModel):
 
     class Config: 
         from_attributes = True
+
+class PlayerUpdate(BaseModel):
+    # Player Information
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    position: Optional[str] = None
+    height: Optional[str] = None
+    weight: Optional[str] = None
+    throw: Optional[Literal["left", "right", "switch"]] = None
+    bat: Optional[Literal["left", "right", "switch"]] = None
+    birth_city: Optional[str] = None # Could this be changed?
+
+    # Miscellaneous
+    agent: Optional[str] = None
+    related_ids: Optional[Dict[str,str]] = None
+    notes: Optional[str] = None

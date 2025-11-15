@@ -6,11 +6,11 @@ class TokenResponse(BaseModel):
     id: str
 
     # User ID
-    claimer: str
+    claimer: str | None = None
 
     # Time
     created_at: datetime
     updated_at: datetime
 
     class Config:
-        from_attributes: True
+        from_attributes = True

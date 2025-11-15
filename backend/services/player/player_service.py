@@ -1,9 +1,10 @@
 from shared.orm_models import Player
 from sqlalchemy.orm import Session
-from player_schema import PlayerCreate, PlayerFastCreate, PlayerResponse
+from player_schema import PlayerCreate, PlayerFastCreate, PlayerResponse, PlayerUpdate
+from fastapi import HTTPException
 
 def calculate_class(date_of_birth: str):
-    pass
+    return "3"
 
 def create_player_service(player_data: PlayerCreate, scout_id: str, db: Session):
     new_player = Player(
@@ -46,5 +47,21 @@ def fast_create_player_service(player_data: PlayerFastCreate, scout_id: str, db:
     db.refresh(new_player)
     return new_player
 
-def update_player_service():
-    pass
+def update_player_service(player_update_data: PlayerUpdate, player_id: str, scout_id: str, db: Session):
+    player: PlayerResponse = db.query(Player).filter(Player.id == player_id).first()
+
+    if not player:
+        raise HTTPException(status_code=400, detail="Player under this ID does not exist.")
+
+    if player.scout_id != scout_id:
+        raise HTTPException(status_code=400, detail="User cannot update player")
+    
+    update_dict = player_update_data.model_dump(exclude_unset=True)
+
+    # Apply updates to ORM model
+    for field, value in update_dict.items():
+        setattr(player, field, value)
+
+    db.commit()
+    db.refresh(player)
+    return player

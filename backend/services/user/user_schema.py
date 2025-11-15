@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field, model_validator
 from typing import List
 from datetime import datetime
+from shared import Player
 
 class UserCreate(BaseModel):
     # User Information
@@ -8,7 +9,6 @@ class UserCreate(BaseModel):
     last_name: str
     email: str
     password: str
-    token: str
 
 class UserResponse(BaseModel):
     # Primary key
@@ -19,10 +19,10 @@ class UserResponse(BaseModel):
     last_name: str
     email: str
     password: str
-    token: str
+    token: str | None = None
 
     # Relationships
-    players: List[dict]
+    players: List["UserPlayerPreview"] = []
 
     # Time
     created_at: datetime
@@ -35,3 +35,15 @@ class UserLogin(BaseModel):
     email: str
     password: str
     token: str
+
+class UserPlayerPreview(BaseModel):
+    # Primary Key
+    id: str
+    # Player Information
+    first_name: str
+    last_name: str
+    position: str
+    player_class: str 
+
+    class Config:
+        from_attributes = True

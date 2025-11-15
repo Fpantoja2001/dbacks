@@ -22,7 +22,7 @@ class User(Base):
         String(100), unique=True, nullable=False, index=True
     )
     password: Mapped[str] = mapped_column(String(128), nullable=False)
-    token: Mapped[str] = mapped_column(String(128), nullable=False)
+    token: Mapped[str] = mapped_column(String(128), nullable=True)
 
     players: Mapped[List["Player"]] = relationship(back_populates="scout")
 

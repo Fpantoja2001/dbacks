@@ -1,10 +1,10 @@
-from fastapi import APIRouter, HTTPException, Cookie, Response, Depends
+from fastapi import APIRouter, HTTPException, Cookie, Response, Depends, Request
 from user_schema import UserCreate, UserLogin, UserResponse
 from shared.db import get_db
 from sqlalchemy.orm import Session
-from user_service import create_user_service, login_user_service
+from user_service import create_user_service, login_user_service, get_personal_info_service
 from typing import Optional
-from shared.jwst import create_user_token, verify_token
+from shared.jwst import create_user_token
 
 
 router = APIRouter(tags=["User"])
@@ -14,13 +14,19 @@ router = APIRouter(tags=["User"])
 def health_check():
     return { "health" : "ok" }
 
+@router.get("/", response_model=UserResponse)
+def get_personal_info_controller(request: Request, db: Session = Depends(get_db)):
+    user_id = getattr(request.state, "user_id", None)
+    print(user_id)
+    return get_personal_info_service(user_id, db)
+
 # Endpoint to create user account
 @router.post("/create", response_model=UserResponse)
 def create_user_controller(user_data: UserCreate, db: Session = Depends(get_db)):
     return create_user_service(user_data, db)
 
 # Endpoint to login
-@router.post("/login", response_model=UserResponse)
+@router.post("/login")
 def login_user_controller(user_data: UserLogin, response: Response, user_token: Optional[str] = Cookie(None), db: Session = Depends(get_db)):
     # If user has token remove, this means they've logged in.
     if user_token:
@@ -37,7 +43,7 @@ def login_user_controller(user_data: UserLogin, response: Response, user_token: 
     # If users login details are correct, set a cookie for them. 
     response.set_cookie(
         key="user_token",
-        value = create_user_token(result),
+        value = create_user_token({ "id": result.id }),
         httponly=True,
         secure=False,
         samesite="lax",
