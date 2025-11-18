@@ -1,13 +1,13 @@
 from pydantic import BaseModel, Field, model_validator
 from typing import Literal, Optional, Dict
-from datetime import datetime
+from datetime import datetime, date
 
 class PlayerCreate(BaseModel):
     # Player Information
     first_name: str
     last_name: str
     position: str
-    date_of_birth: str
+    date_of_birth: date
     height: str
     weight: str
     throw: Literal["left", "right", "switch"]
@@ -19,11 +19,17 @@ class PlayerCreate(BaseModel):
     related_ids: Optional[Dict[str,str]] = None
     notes: Optional[str] = None
 
+    @model_validator(mode="after")
+    def validate_date_of_birth(self):
+        if self.date_of_birth > date.today():
+            raise ValueError("Date of birth cannot be in the future")
+        return self
+
 class PlayerFastCreate(BaseModel):
     first_name: str
     last_name: str
     position: str
-    date_of_birth: str
+    date_of_birth: date
 
 class PlayerResponse(BaseModel):
     # Primary Key
@@ -33,7 +39,7 @@ class PlayerResponse(BaseModel):
     first_name: str
     last_name: str
     position: str
-    date_of_birth: str
+    date_of_birth: date
     player_class: str 
     height: str
     weight: str

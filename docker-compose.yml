@@ -41,6 +41,48 @@ services:
       DATABASE_URL: "mysql+pymysql://${DB_USER}:${DB_PASSWORD}@db:3306/${DB_NAME}"
     networks: [app-network]
 
+  session_service:
+    build:
+      context: ./backend
+      dockerfile: ./services/session/deps/Dockerfile
+    ports: ["3003:3003"]
+    restart: always
+    depends_on:
+      db: 
+        condition: service_healthy
+    environment:
+      SECRET_KEY: "${SECRET_KEY}"
+      DATABASE_URL: "mysql+pymysql://${DB_USER}:${DB_PASSWORD}@db:3306/${DB_NAME}"
+    networks: [app-network]
+
+  turn_service:
+    build:
+      context: ./backend
+      dockerfile: ./services/turn/deps/Dockerfile
+    ports: ["3004:3004"]
+    restart: always
+    depends_on:
+      db: 
+        condition: service_healthy
+    environment:
+      SECRET_KEY: "${SECRET_KEY}"
+      DATABASE_URL: "mysql+pymysql://${DB_USER}:${DB_PASSWORD}@db:3306/${DB_NAME}"
+    networks: [app-network]
+
+  pitch_service:
+    build:
+      context: ./backend
+      dockerfile: ./services/pitch/deps/Dockerfile
+    ports: ["3005:3005"]
+    restart: always
+    depends_on:
+      db: 
+        condition: service_healthy
+    environment:
+      SECRET_KEY: "${SECRET_KEY}"
+      DATABASE_URL: "mysql+pymysql://${DB_USER}:${DB_PASSWORD}@db:3306/${DB_NAME}"
+    networks: [app-network]
+
   # Databases
 
   db:
@@ -73,6 +115,12 @@ services:
       # player_service:
       #   condition: service_started
       # token_service:
+      #   condition: service_started
+      # session_service:
+      #   condition: service_started
+      # turn_service:
+      #   condition: service_started
+      # pitch_service:
       #   condition: service_started
     networks: [app-network]
     ports: ["80:80"]

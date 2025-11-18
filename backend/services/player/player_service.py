@@ -2,9 +2,15 @@ from shared.orm_models import Player
 from sqlalchemy.orm import Session
 from player_schema import PlayerCreate, PlayerFastCreate, PlayerResponse, PlayerUpdate
 from fastapi import HTTPException
+from datetime import date
 
-def calculate_class(date_of_birth: str):
-    return "3"
+def calculate_class(date_of_birth: date) -> str:
+    cutoff_date = date(date_of_birth.year, 8, 31)
+
+    if date_of_birth <= cutoff_date:
+        return str(date_of_birth.year + 17)
+    else:
+        return str(date_of_birth.year + 18)
 
 def create_player_service(player_data: PlayerCreate, scout_id: str, db: Session):
     new_player = Player(
