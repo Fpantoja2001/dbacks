@@ -6,9 +6,9 @@ from shared import verify_token
 
 # Whitelisted Routes
 whitelisted = [
-    '/health',
-    '/create',
-    '/login'
+    '/user/health',
+    '/user/create',
+    '/user/login'
 ]
 
 app = FastAPI()
