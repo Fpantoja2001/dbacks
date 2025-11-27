@@ -3,6 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { StatusBar } from 'react-native';
 
 export default function HomeScreen() {
   
@@ -27,6 +28,7 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" />
       <View style={styles.dateCard}>
         <Text style={styles.dateLabel}>
             TODAYS DATE

@@ -1,10 +1,9 @@
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput  } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { useState, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import  Player  from '../types/Player';
-
+import Player from '../types/Player';
 
 export default function PlayerScreen() {
   const router = useRouter();
@@ -27,24 +26,23 @@ export default function PlayerScreen() {
     }
   };
 
-const getClassYear = (dobString: string) => {
+  const getClassYear = (dobString: string) => {
     const parts = dobString.split('/');
     const month = parseInt(parts[0]);
     const day = parseInt(parts[1]);
     const year = parseInt(parts[2]);
 
-    // Cutoff date is August 31st of birth year
     const birthDate = new Date(year, month - 1, day);
-    const cutoffDate = new Date(year, 7, 31); // August is month 7 (0-indexed)
+    const cutoffDate = new Date(year, 7, 31);
 
     if (birthDate <= cutoffDate) {
       return year + 17;
     } else {
       return year + 18;
     }
-};
+  };
 
-   const getPositionAbbr = (position: string) => {
+  const getPositionAbbr = (position: string) => {
     const abbrs: { [key: string]: string } = {
       'Pitcher': 'P',
       'Catcher': 'C',
@@ -53,26 +51,90 @@ const getClassYear = (dobString: string) => {
       'Shortstop': 'SS',
       'Third Base': '3B',
       'Outfield': 'OF',
+      'Leftfield': 'LF',
+      'Rightfield': 'RF',
+      'Centerfield': 'CF',
+      'DesignatedHitter': 'DH'
     };
     return abbrs[position] || position;
   };
 
-  // // Filter players based on search
-  // const filteredPlayers = players.filter(player =>
-  //   `${player.firstName} ${player.lastName}`.toLowerCase().includes(searchQuery.toLowerCase())
-  // );
+  const handleEditPlayer = (player: Player) => {
+    router.push({
+      pathname: '/editPlayer',
+      params: { playerId: player.id },
+    });
+  };
+
+  const handleDeletePlayer = (player: Player) => {
+    Alert.alert(
+      'Delete Player',
+      `Are you sure you want to delete ${player.firstName} ${player.lastName}? This cannot be undone.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              const updatedPlayers = players.filter((p) => p.id !== player.id);
+              await AsyncStorage.setItem('players', JSON.stringify(updatedPlayers));
+              setPlayers(updatedPlayers);
+            } catch (error) {
+              console.error('Failed to delete player:', error);
+              Alert.alert('Error', 'Failed to delete player');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const handlePlayerOptions = (player: Player) => {
+    Alert.alert(
+      `${player.firstName} ${player.lastName}`,
+      'What would you like to do?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Edit', onPress: () => handleEditPlayer(player) },
+        { text: 'Delete', style: 'destructive', onPress: () => handleDeletePlayer(player) },
+      ]
+    );
+  };
 
   const renderPlayer = ({ item }: { item: Player }) => (
-    <TouchableOpacity style={styles.playerCard}>
-      <View style={styles.playerHeader}>
-        <Text style={styles.playerName}>{item.firstName} {item.lastName}</Text>
-        <View style={styles.positionBadge}>
-          <Text style={styles.positionText}>{getPositionAbbr(item.position)}</Text>
+    <TouchableOpacity
+      style={styles.playerCard}
+      onPress={() => handlePlayerOptions(item)}
+      onLongPress={() => handlePlayerOptions(item)}
+    >
+      <View style={styles.playerContent}>
+        <View style={styles.playerInfo}>
+          <View style={styles.playerHeader}>
+            <Text style={styles.playerName}>{item.firstName} {item.lastName}</Text>
+            <View style={styles.positionBadge}>
+              <Text style={styles.positionText}>{getPositionAbbr(item.position)}</Text>
+            </View>
+          </View>
+          <Text style={styles.playerDetails}>
+            Class: {getClassYear(item.dob)}  •  {item.height}, {item.weight}lb  •  B/T: {item.bats}/{item.throws}
+          </Text>
+        </View>
+        <View style={styles.playerActions}>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => handleEditPlayer(item)}
+          >
+            <Ionicons name="pencil-outline" size={18} color="#6B7280" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={() => handleDeletePlayer(item)}
+          >
+            <Ionicons name="trash-outline" size={18} color="#EF4444" />
+          </TouchableOpacity>
         </View>
       </View>
-      <Text style={styles.playerDetails}>
-        Class: {getClassYear(item.dob)}  •  {item.height}, {item.weight}lb  •  B/T: {item.bats}/{item.throws}
-      </Text>
     </TouchableOpacity>
   );
 
@@ -81,11 +143,7 @@ const getClassYear = (dobString: string) => {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Players</Text>
       </View>
-      <TouchableOpacity style={styles.addPlayerButton}>
-        <Ionicons name="add-outline" style={styles.addPlayerIcon}></Ionicons>
-      </TouchableOpacity>
 
-      {/* Player List */}
       <FlatList
         data={players}
         renderItem={renderPlayer}
@@ -93,39 +151,39 @@ const getClassYear = (dobString: string) => {
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           <View style={styles.emptyState}>
+            <Ionicons name="people-outline" size={48} color="#D1D5DB" />
             <Text style={styles.emptyText}>No players yet</Text>
             <Text style={styles.emptySubtext}>Tap + to add your first player</Text>
           </View>
         }
       />
 
-      <TouchableOpacity style={styles.addPlayerButton} onPress={() => router.push('/addPlayer')}>
-        <Ionicons name="add-outline" style={styles.addPlayerIcon}></Ionicons>
+      <TouchableOpacity
+        style={styles.addPlayerButton}
+        onPress={() => router.push('/addPlayer')}
+      >
+        <Ionicons name="add-outline" style={styles.addPlayerIcon} />
       </TouchableOpacity>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F3F4F6'},
-  header: { backgroundColor: '#DC2626', paddingTop: 60, paddingBottom: 20, paddingHorizontal: 20, alignItems: "center"},
-  headerTitle: { color: '#fff', fontSize: 24, fontWeight: 'bold'},
-  content: { flex: 1, padding: 16 },
-  addPlayerButton: {
-    backgroundColor: '#DC2626',
-    width: 60,
-    height: 60,
-    borderRadius: 100,
-    fontWeight: 200,
-    justifyContent: "center",
-    position: 'absolute',
-    right: "5%",
-    bottom: 30
+  container: {
+    flex: 1,
+    backgroundColor: '#F3F4F6',
   },
-  addPlayerIcon: {
-    fontSize: 40,
+  header: {
+    backgroundColor: '#DC2626',
+    paddingTop: 60,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+  },
+  headerTitle: {
     color: '#fff',
-    alignSelf: 'center'
+    fontSize: 24,
+    fontWeight: 'bold',
   },
   listContent: {
     padding: 16,
@@ -138,6 +196,13 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 1,
     borderColor: '#E5E7EB',
+  },
+  playerContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  playerInfo: {
+    flex: 1,
   },
   playerHeader: {
     flexDirection: 'row',
@@ -165,6 +230,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#6B7280',
   },
+  playerActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  actionButton: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: '#F3F4F6',
+  },
   emptyState: {
     alignItems: 'center',
     marginTop: 60,
@@ -173,26 +247,31 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     color: '#374151',
+    marginTop: 12,
   },
   emptySubtext: {
     fontSize: 14,
     color: '#9CA3AF',
     marginTop: 4,
   },
-  fab: {
-    position: 'absolute',
-    bottom: 100,
-    right: 20,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+  addPlayerButton: {
     backgroundColor: '#DC2626',
+    width: 60,
+    height: 60,
+    borderRadius: 100,
     justifyContent: 'center',
-    alignItems: 'center',
+    position: 'absolute',
+    right: '5%',
+    bottom: 30,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
+  },
+  addPlayerIcon: {
+    fontSize: 40,
+    color: '#fff',
+    alignSelf: 'center',
   },
 });

@@ -21,6 +21,7 @@ export default function RootLayout() {
       <Stack.Screen name="TurnDetail" />
       <Stack.Screen name="historySessionDetail" />
       <Stack.Screen name="historyTurnDetail" />
+      <Stack.Screen name="editPlayer" />
   </Stack>
   );
 }

@@ -192,12 +192,52 @@ export default function HistoryScreen() {
             // Format time (remove AM/PM, keep HH:MM:SS format)
             const timeStr = pitch.startTime || '';
 
+            const reformatName = (name: string | undefined): string => {
+              if (!name) return '';
+              
+              // Trim and remove extra spaces
+              const cleanedName = name.trim().replace(/\s+/g, ' ');
+              const parts = cleanedName.split(' ');
+              
+              if (parts.length < 2) return cleanedName;
+              
+              // Last name is the last part, first name is everything else
+              const lastName = parts[parts.length - 1];
+              const firstName = parts.slice(0, -1).join(' ');
+              
+              // Format: "LastName, FirstName" (single comma, single space)
+              return `${lastName}, ${firstName}`;
+            };
+
+            const convertTo24Hour = (time12h?: string): string => {
+              if (!time12h) return '';
+
+              // Normalize: trim, collapse spaces, uppercase
+              const clean = time12h.trim().replace(/\s+/g, ' ').toUpperCase();
+
+              // Extract time + AM/PM using regex
+              const match = clean.match(/^(\d{1,2}:\d{2}(?::\d{2})?)\s?(AM|PM)$/);
+              if (!match) return time12h; // Unexpected format → return original
+
+              const [_, time, period] = match;
+              let [h, m, s] = time.split(':');
+
+              let hour = parseInt(h, 10);
+
+              if (period === 'PM' && hour !== 12) hour += 12;
+              if (period === 'AM' && hour === 12) hour = 0;
+
+              const hh = hour.toString().padStart(2, '0');
+
+              return s ? `${hh}:${m}:${s}` : `${hh}:${m}`;
+            };
+
             // Build row with all 68 columns
             const row = [
               pitchNo,                              // PitchNo
               dateStr,                              // Date
-              timeStr,                              // Time
-              `"${turn.pitcherName || ''}"`,        // Pitcher
+              convertTo24Hour(timeStr),             // Time
+              `"${reformatName(turn.pitcherName)}"`,// Pitcher
               '',                                   // PitcherId
               '',                                   // PitcherThrows
               '',                                   // PitcherTeam
@@ -240,7 +280,7 @@ export default function HistoryScreen() {
               '',                                   // Device
               '',                                   // Direction
               '',                                   // BatterId
-              `"${turn.batterName || turn.playerName || ''}"`, // Batter
+              `"${reformatName(turn.batterName) || reformatName(turn.playerName)}"`, // Batter
               '',                                   // HitSpinRate
               '',                                   // HitType
               '',                                   // ExitSpeed
@@ -271,7 +311,7 @@ export default function HistoryScreen() {
     });
 
       // Create file using new expo-file-system API
-      const fileName = `Trackman_Session_${dateStr}_${Date.now()}.csv`;
+      const fileName = `Session_${dateStr}_${Date.now()}.csv`;
       const file = new File(Paths.cache, fileName);
       
       // Write content to file
@@ -413,17 +453,19 @@ export default function HistoryScreen() {
         </View>
       </View>
 
-      <View style={styles.quickStats}>
+      {/* <View style={styles.quickStats}>
         {getTopResults(item.turns).map((stat, index) => (
           <View key={index} style={styles.statBadge}>
             <Text style={styles.statText}>{stat.result}: {stat.count}</Text>
           </View>
         ))}
-      </View>
+      </View> */}
 
       <View style={styles.viewMore}>
-        <Text style={styles.viewMoreText}>Tap to view details</Text>
-        <Ionicons name="chevron-forward" size={16} color="#9CA3AF" />
+        <Text style={styles.viewMoreTextLeft}>{item.turns && item.turns.length > 0 && item.turns[0].pitches && item.turns[0].pitches.length > 0
+      ? item.turns[0].pitches[0].startTime
+      : ''}</Text>
+        <Text style={styles.viewMoreTextRight}>Tap to view details</Text>
       </View>
     </TouchableOpacity>
   );
@@ -549,15 +591,25 @@ const styles = StyleSheet.create({
   viewMore: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-end',
     marginTop: 12,
-    paddingTop: 12,
+    paddingTop: 28,
     borderTopWidth: 1,
     borderTopColor: '#F3F4F6',
+    justifyContent: 'space-between',
+    position: 'relative',
   },
-  viewMoreText: {
+  viewMoreTextLeft: {
     fontSize: 13,
     color: '#9CA3AF',
+    alignSelf: 'flex-end',
+    position: 'absolute'
+  },
+  viewMoreTextRight: {
+    fontSize: 13,
+    color: '#9CA3AF',
+    alignSelf: 'flex-end',
+    position: 'absolute',
+    right: 0
   },
   emptyState: {
     flex: 1,

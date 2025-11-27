@@ -188,76 +188,116 @@ export default function HistorySessionDetailScreen() {
                 // Format time (remove AM/PM, keep HH:MM:SS format)
                 const timeStr = pitch.startTime || '';
 
+                const reformatName = (name: string | undefined): string => {
+                    if (!name) return '';
+                    
+                    // Trim and remove extra spaces
+                    const cleanedName = name.trim().replace(/\s+/g, ' ');
+                    const parts = cleanedName.split(' ');
+                    
+                    if (parts.length < 2) return cleanedName;
+                    
+                    // Last name is the last part, first name is everything else
+                    const lastName = parts[parts.length - 1];
+                    const firstName = parts.slice(0, -1).join(' ');
+                    
+                    // Format: "LastName, FirstName" (single comma, single space)
+                    return `${lastName}, ${firstName}`;
+                };
+
+                const convertTo24Hour = (time12h?: string): string => {
+                    if (!time12h) return '';
+
+                    // Normalize: trim, collapse spaces, uppercase
+                    const clean = time12h.trim().replace(/\s+/g, ' ').toUpperCase();
+
+                    // Extract time + AM/PM using regex
+                    const match = clean.match(/^(\d{1,2}:\d{2}(?::\d{2})?)\s?(AM|PM)$/);
+                    if (!match) return time12h; // Unexpected format → return original
+
+                    const [_, time, period] = match;
+                    let [h, m, s] = time.split(':');
+
+                    let hour = parseInt(h, 10);
+
+                    if (period === 'PM' && hour !== 12) hour += 12;
+                    if (period === 'AM' && hour === 12) hour = 0;
+
+                    const hh = hour.toString().padStart(2, '0');
+
+                    return s ? `${hh}:${m}:${s}` : `${hh}:${m}`;
+                };
+
                 // Build row with all 68 columns
                 const row = [
-                    pitchNo,                              // PitchNo
-                    dateStr,                              // Date
-                    timeStr,                              // Time
-                    `"${turn.pitcherName || ''}"`,        // Pitcher
-                    '',                                   // PitcherId
-                    '',                                   // PitcherThrows
-                    '',                                   // PitcherTeam
-                    '',                                   // PitcherSet
-                    taggedPitchType,                      // TaggedPitchType
-                    'Live',                               // PitchSession
-                    '',                                   // Flag
-                    pitch.mph || '',                      // RelSpeed (MPH)
-                    '',                                   // VertRelAngle
-                    '',                                   // HorzRelAngle
-                    '',                                   // SpinRate
-                    '',                                   // SpinAxis
-                    '',                                   // Tilt
-                    '',                                   // RelHeight
-                    '',                                   // RelSide
-                    '',                                   // Extension
-                    '',                                   // VertBreak
-                    '',                                   // InducedVertBreak
-                    '',                                   // HorzBreak
-                    '',                                   // PlateLocHeight
-                    '',                                   // PlateLocSide
-                    '',                                   // ZoneSpeed
-                    '',                                   // VertApprAngle
-                    '',                                   // HorzApprAngle
-                    '',                                   // ZoneTime
-                    '',                                   // pfxx
-                    '',                                   // pfxz
-                    '',                                   // x0
-                    '',                                   // y0
-                    '',                                   // z0
-                    '',                                   // vx0
-                    '',                                   // vy0
-                    '',                                   // vz0
-                    '',                                   // ax0
-                    '',                                   // ay0
-                    '',                                   // az0
-                    '',                                   // CalibrationId
-                    '',                                   // EffVelocity
-                    'Pitching',                           // PracticeType
-                    '',                                   // Device
-                    '',                                   // Direction
-                    '',                                   // BatterId
-                    `"${turn.batterName || turn.playerName || ''}"`, // Batter
-                    '',                                   // HitSpinRate
-                    '',                                   // HitType
-                    '',                                   // ExitSpeed
-                    '',                                   // BatterSide
-                    '',                                   // Angle
-                    '',                                   // PositionAt110X
-                    '',                                   // PositionAt110Y
-                    '',                                   // PositionAt110Z
-                    '',                                   // Distance
-                    '',                                   // LastTrackedDistance
-                    '',                                   // HangTime
-                    '',                                   // Bearing
-                    '',                                   // ContactPositionX
-                    '',                                   // ContactPositionY
-                    '',                                   // ContactPositionZ
-                    '',                                   // SpinAxis3dTransverseAngle
-                    '',                                   // SpinAxis3dLongitudinalAngle
-                    '',                                   // SpinAxis3dActiveSpinRate
-                    '',                                   // SpinAxis3dSpinEfficiency
-                    '',                                   // SpinAxis3dTilt
-                    pitch.id || '',                       // PlayID
+                    pitchNo,                                            // PitchNo
+                    dateStr,                                            // Date
+                    convertTo24Hour(timeStr),                                            // Time
+                    `"${reformatName(turn.pitcherName)}"`,        // Pitcher
+                    '',                                                 // PitcherId
+                    '',                                                 // PitcherThrows
+                    '',                                                 // PitcherTeam
+                    '',                                                 // PitcherSet
+                    taggedPitchType,                                    // TaggedPitchType
+                    'Live',                                             // PitchSession
+                    '',                                                 // Flag
+                    pitch.mph || '',                                    // RelSpeed (MPH)
+                    '',                                                 // VertRelAngle
+                    '',                                                 // HorzRelAngle
+                    '',                                                 // SpinRate
+                    '',                                                 // SpinAxis
+                    '',                                                 // Tilt
+                    '',                                                 // RelHeight
+                    '',                                                 // RelSide
+                    '',                                                 // Extension
+                    '',                                                 // VertBreak
+                    '',                                                 // InducedVertBreak
+                    '',                                                 // HorzBreak
+                    '',                                                 // PlateLocHeight
+                    '',                                                 // PlateLocSide
+                    '',                                                 // ZoneSpeed
+                    '',                                                 // VertApprAngle
+                    '',                                                 // HorzApprAngle
+                    '',                                                 // ZoneTime
+                    '',                                                 // pfxx
+                    '',                                                 // pfxz
+                    '',                                                 // x0
+                    '',                                                 // y0
+                    '',                                                 // z0
+                    '',                                                 // vx0
+                    '',                                                 // vy0
+                    '',                                                 // vz0
+                    '',                                                 // ax0
+                    '',                                                 // ay0
+                    '',                                                 // az0
+                    '',                                                 // CalibrationId
+                    '',                                                 // EffVelocity
+                    'Pitching',                                         // PracticeType
+                    '',                                                 // Device
+                    '',                                                 // Direction
+                    '',                                                 // BatterId
+                    `"${reformatName(turn.batterName) || reformatName(turn.playerName)}"`, // Batter
+                    '',                                                 // HitSpinRate
+                    '',                                                 // HitType
+                    '',                                                 // ExitSpeed
+                    '',                                                 // BatterSide
+                    '',                                                 // Angle
+                    '',                                                 // PositionAt110X
+                    '',                                                 // PositionAt110Y
+                    '',                                                 // PositionAt110Z
+                    '',                                                 // Distance
+                    '',                                                 // LastTrackedDistance
+                    '',                                                 // HangTime
+                    '',                                                 // Bearing
+                    '',                                                 // ContactPositionX
+                    '',                                                 // ContactPositionY
+                    '',                                                 // ContactPositionZ
+                    '',                                                 // SpinAxis3dTransverseAngle
+                    '',                                                 // SpinAxis3dLongitudinalAngle
+                    '',                                                 // SpinAxis3dActiveSpinRate
+                    '',                                                 // SpinAxis3dSpinEfficiency
+                    '',                                                 // SpinAxis3dTilt
+                    pitch.id || '',                                     // PlayID
                 ];
 
                 csvContent += row.join(',') + '\n';
@@ -267,7 +307,7 @@ export default function HistorySessionDetailScreen() {
             });
 
             // Create file using new expo-file-system API
-            const fileName = `Trackman_Session_${dateStr}_${Date.now()}.csv`;
+            const fileName = `Session_${dateStr}_${Date.now()}.csv`;
             const file = new File(Paths.cache, fileName);
             
             // Write content to file

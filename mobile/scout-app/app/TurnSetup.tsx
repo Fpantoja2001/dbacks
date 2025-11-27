@@ -52,6 +52,10 @@ export default function TurnSetupScreen() {
       'Shortstop': 'SS',
       'Third Base': '3B',
       'Outfield': 'OF',
+      'Leftfield': 'LF',
+      'Rightfield': 'RF',
+      'Centerfield': 'CF',
+      'DesignatedHitter': 'DH'
     };
     return abbrs[position] || position;
   };
@@ -197,6 +201,10 @@ export default function TurnSetupScreen() {
             {players.map((item) => {
                 const isSelected = selectedPitcher?.id === item.id;
                 const isDisabled = selectedBatter?.id === item.id;
+
+                if (item.position !== 'Pitcher') {
+                    return;
+                }
 
                 return (
                 <TouchableOpacity

@@ -29,6 +29,10 @@ const positions = [
     { label: 'Shortstop', value: 'Shortstop' },
     { label: 'Third Base', value: 'Third Base' },
     { label: 'Outfield', value: 'Outfield' },
+    { label: 'Leftfield', value: 'Leftfield' },
+    { label: 'Rightfield', value: 'Rightfield' },
+    { label: 'Centerfield', value: 'Centerfield' },
+    { label: 'DesignatedHitter', value: 'DesignatedHitter' },
 ];
 
 const handleSave = async () => {

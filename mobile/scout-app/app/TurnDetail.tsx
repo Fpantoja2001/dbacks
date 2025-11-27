@@ -63,24 +63,6 @@ export default function TurnDetailScreen() {
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}.${tenths}`;
   };
 
-  const getResultColor = (result: string) => {
-    switch (result) {
-      case 'Ball':
-        return '#10B981'; // Green
-      case 'Strike':
-      case 'Foul':
-        return '#EF4444'; // Red
-      case 'Hit':
-        return '#3B82F6'; // Blue
-      case 'Out':
-        return '#6B7280'; // Gray
-      case 'HBP':
-        return '#F59E0B'; // Orange
-      default:
-        return '#6B7280';
-    }
-  };
-
   const renderPitch = ({ item, index }: { item: Pitch; index: number }) => (
     <View style={styles.pitchCard}>
       <View style={styles.pitchLeft}>
